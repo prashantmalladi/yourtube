@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { SidebarProvider } from "@/components/layout/SidebarContext";
 import "./globals.css";
 
 const THEME_INIT_SCRIPT = `(function () {
@@ -43,11 +44,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </Script>
       </head>
       <body className="min-h-full flex flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-        <Header />
-        <div className="flex flex-1">
-          <Sidebar />
-          <main className="min-w-0 flex-1">{children}</main>
-        </div>
+        <SidebarProvider>
+          <Header />
+          <div className="flex flex-1">
+            <Sidebar />
+            <main className="min-w-0 flex-1">{children}</main>
+          </div>
+        </SidebarProvider>
       </body>
     </html>
   );

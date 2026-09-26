@@ -1,13 +1,20 @@
+"use client";
+
 import Link from "next/link";
 import { BellIcon, MenuIcon, MicIcon, SearchIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useSidebar } from "@/components/layout/SidebarContext";
 
 export function Header() {
+  const { toggle } = useSidebar();
+
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-950">
       <div className="flex shrink-0 items-center gap-4">
         <button
+          type="button"
           aria-label="Open menu"
+          onClick={toggle}
           className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"
         >
           <MenuIcon className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
