@@ -2,11 +2,24 @@ export type Video = {
   id: string;
   title: string;
   channel: string;
+  channelId: string;
   views: string;
   uploaded: string;
   duration: string;
   thumbnailGradient: string;
   emoji: string;
+};
+
+export type Channel = {
+  id: string;
+  name: string;
+  handle: string;
+  avatarEmoji: string;
+  bannerGradient: string;
+  subscribers: string;
+  videoCount: string;
+  verified: boolean;
+  description: string;
 };
 
 export type Short = {
@@ -55,6 +68,7 @@ export const forYouVideos: Video[] = [
     id: "1",
     title: "Cutest Puppy Moments That Will Make Your Day",
     channel: "Doggy Joy",
+    channelId: "doggy-joy",
     views: "2.4M views",
     uploaded: "3 weeks ago",
     duration: "10:24",
@@ -65,6 +79,7 @@ export const forYouVideos: Video[] = [
     id: "2",
     title: "Dogs Being Funny 😂 Try Not to Laugh (Impossible!)",
     channel: "Pawsome TV",
+    channelId: "pawsome-tv",
     views: "12M views",
     uploaded: "1 month ago",
     duration: "8:17",
@@ -75,6 +90,7 @@ export const forYouVideos: Video[] = [
     id: "3",
     title: "Basic Dog Training for Beginners | Simple & Effective Tips",
     channel: "The Balanced Dog",
+    channelId: "the-balanced-dog",
     views: "1.1M views",
     uploaded: "1 month ago",
     duration: "12:36",
@@ -85,6 +101,7 @@ export const forYouVideos: Video[] = [
     id: "4",
     title: "Relaxing Music for Dogs 🐾 Calm Anxiety and Help Them Sleep",
     channel: "Paw Harmony",
+    channelId: "paw-harmony",
     views: "4.3M views",
     uploaded: "2 months ago",
     duration: "1:00:00",
@@ -149,6 +166,7 @@ export const recommendedVideos: Video[] = [
     id: "r1",
     title: "Best Dog Breeds for Families",
     channel: "Doggy Joy",
+    channelId: "doggy-joy",
     views: "3.2M views",
     uploaded: "2 weeks ago",
     duration: "14:02",
@@ -159,6 +177,7 @@ export const recommendedVideos: Video[] = [
     id: "r2",
     title: "Rescue Dogs' Amazing Transformations",
     channel: "Second Chance Paws",
+    channelId: "second-chance-paws",
     views: "5.8M views",
     uploaded: "5 days ago",
     duration: "16:45",
@@ -169,6 +188,7 @@ export const recommendedVideos: Video[] = [
     id: "r3",
     title: "A Day in the Life of a Dog",
     channel: "Paw Harmony",
+    channelId: "paw-harmony",
     views: "980K views",
     uploaded: "1 week ago",
     duration: "9:53",
@@ -179,6 +199,7 @@ export const recommendedVideos: Video[] = [
     id: "r4",
     title: "Healthy Homemade Dog Treats",
     channel: "The Balanced Dog",
+    channelId: "the-balanced-dog",
     views: "1.6M views",
     uploaded: "4 days ago",
     duration: "7:19",
@@ -311,4 +332,75 @@ export const videoDetails: Record<string, VideoDetails> = Object.fromEntries(
 
 export function getVideoDetails(id: string): VideoDetails | undefined {
   return videoDetails[id];
+}
+
+export const channels: Channel[] = [
+  {
+    id: "doggy-joy",
+    name: "Doggy Joy",
+    handle: "@DoggyJoy",
+    avatarEmoji: "🐶",
+    bannerGradient: "from-amber-200 via-lime-200 to-emerald-200",
+    subscribers: "2.4M subscribers",
+    videoCount: "412 videos",
+    verified: true,
+    description:
+      "Spreading joy, one wag at a time! 🐾❤️ Cute moments, training tips, dog care, and fun adventures to make a happier world with dogs.",
+  },
+  {
+    id: "pawsome-tv",
+    name: "Pawsome TV",
+    handle: "@PawsomeTV",
+    avatarEmoji: "🐕",
+    bannerGradient: "from-lime-200 via-green-200 to-teal-200",
+    subscribers: "5.1M subscribers",
+    videoCount: "268 videos",
+    verified: true,
+    description:
+      "The internet's favorite home for hilarious dog moments. New funny videos every week — guaranteed to make you smile.",
+  },
+  {
+    id: "the-balanced-dog",
+    name: "The Balanced Dog",
+    handle: "@TheBalancedDog",
+    avatarEmoji: "🦮",
+    bannerGradient: "from-sky-200 via-blue-200 to-indigo-200",
+    subscribers: "890K subscribers",
+    videoCount: "156 videos",
+    verified: false,
+    description:
+      "Practical, positive dog training for real life. No harsh methods, just patience, consistency, and lots of treats.",
+  },
+  {
+    id: "paw-harmony",
+    name: "Paw Harmony",
+    handle: "@PawHarmony",
+    avatarEmoji: "🐩",
+    bannerGradient: "from-indigo-200 via-purple-200 to-pink-200",
+    subscribers: "1.2M subscribers",
+    videoCount: "94 videos",
+    verified: false,
+    description:
+      "Calming music, gentle vlogs, and relaxed days with dogs. Help your pup unwind, and yourself too.",
+  },
+  {
+    id: "second-chance-paws",
+    name: "Second Chance Paws",
+    handle: "@SecondChancePaws",
+    avatarEmoji: "🐕‍🦺",
+    bannerGradient: "from-stone-200 via-neutral-200 to-orange-100",
+    subscribers: "610K subscribers",
+    videoCount: "203 videos",
+    verified: false,
+    description:
+      "Rescue stories, adoption tips, and transformations that will restore your faith in second chances.",
+  },
+];
+
+export function getChannel(id: string): Channel | undefined {
+  return channels.find((channel) => channel.id === id);
+}
+
+export function getChannelVideos(id: string): Video[] {
+  return allVideos.filter((video) => video.channelId === id);
 }

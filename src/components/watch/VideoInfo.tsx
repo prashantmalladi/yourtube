@@ -16,14 +16,16 @@ export function VideoInfo({ video }: { video: VideoDetails }) {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xl dark:bg-amber-900">
-            {video.emoji}
-          </div>
+          <a href={`/channel/${video.channelId}`} className="shrink-0">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-xl dark:bg-amber-900">
+              {video.emoji}
+            </div>
+          </a>
           <div>
-            <div className="flex items-center gap-1">
+            <a href={`/channel/${video.channelId}`} className="flex items-center gap-1 hover:opacity-80">
               <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{video.channel}</p>
               {video.verified && <CheckBadgeIcon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />}
-            </div>
+            </a>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">{video.subscribers}</p>
           </div>
           <button className="ml-2 rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300">
