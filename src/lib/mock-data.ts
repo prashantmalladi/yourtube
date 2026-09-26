@@ -18,6 +18,25 @@ export type Short = {
   emoji: string;
 };
 
+export type Comment = {
+  id: string;
+  author: string;
+  avatarEmoji: string;
+  time: string;
+  text: string;
+  likes: string;
+  replies: number;
+};
+
+export type VideoDetails = Video & {
+  subscribers: string;
+  verified: boolean;
+  likes: string;
+  hashtags: string[];
+  description: string;
+  comments: Comment[];
+};
+
 export const categories = [
   "Dogs",
   "Puppies",
@@ -167,3 +186,129 @@ export const recommendedVideos: Video[] = [
     emoji: "🦴",
   },
 ];
+
+export const allVideos: Video[] = [...forYouVideos, ...recommendedVideos];
+
+const sampleComments: Comment[] = [
+  {
+    id: "c1",
+    author: "Pawfect Life",
+    avatarEmoji: "🐕",
+    time: "3 weeks ago",
+    text: "This made my entire day! Dogs truly make the world a happier place 🥹❤️",
+    likes: "1.2K",
+    replies: 23,
+  },
+  {
+    id: "c2",
+    author: "Golden Retriever Fan",
+    avatarEmoji: "🐩",
+    time: "2 weeks ago",
+    text: "I need a dog like this in my life immediately, no notes.",
+    likes: "684",
+    replies: 5,
+  },
+  {
+    id: "c3",
+    author: "Bark Bros",
+    avatarEmoji: "🐾",
+    time: "2 weeks ago",
+    text: "The tennis ball at 2:34 sent me 😂 absolute chaos energy.",
+    likes: "412",
+    replies: 2,
+  },
+  {
+    id: "c4",
+    author: "Second Chance Paws",
+    avatarEmoji: "🦴",
+    time: "1 week ago",
+    text: "Shared this with the whole shelter team, everyone loved it.",
+    likes: "198",
+    replies: 0,
+  },
+];
+
+const detailExtras: Record<
+  string,
+  Pick<VideoDetails, "subscribers" | "verified" | "likes" | "hashtags" | "description">
+> = {
+  "1": {
+    subscribers: "2.4M subscribers",
+    verified: true,
+    likes: "78K",
+    hashtags: ["#Puppy", "#Dogs", "#CuteMoments"],
+    description:
+      "Get ready for the cutest puppy moments that will instantly brighten your day! From playful zoomies to sleepy cuddles, these adorable dogs will melt your heart.",
+  },
+  "2": {
+    subscribers: "5.1M subscribers",
+    verified: true,
+    likes: "203K",
+    hashtags: ["#FunnyDogs", "#DogsOfYouTube", "#Laughs"],
+    description:
+      "Warning: you might actually laugh out loud. A compilation of the funniest, most unpredictable dog moments sent in by our amazing community.",
+  },
+  "3": {
+    subscribers: "890K subscribers",
+    verified: false,
+    likes: "34K",
+    hashtags: ["#DogTraining", "#PuppyTips", "#GoodBoy"],
+    description:
+      "Simple, effective training tips every new dog owner needs to know. No harsh methods, just patience, consistency, and lots of treats.",
+  },
+  "4": {
+    subscribers: "1.2M subscribers",
+    verified: false,
+    likes: "56K",
+    hashtags: ["#DogRelaxation", "#CalmingMusic", "#DogAnxiety"],
+    description:
+      "An hour of gentle music composed to help anxious dogs relax, unwind, and get some well-deserved rest. Great for thunderstorms and fireworks too.",
+  },
+  r1: {
+    subscribers: "2.4M subscribers",
+    verified: true,
+    likes: "61K",
+    hashtags: ["#DogBreeds", "#FamilyDogs", "#Puppy"],
+    description:
+      "A rundown of the friendliest, most family-oriented dog breeds out there, plus what makes each one such a great companion for kids.",
+  },
+  r2: {
+    subscribers: "610K subscribers",
+    verified: false,
+    likes: "89K",
+    hashtags: ["#RescueDogs", "#AdoptDontShop", "#Transformation"],
+    description:
+      "Heartwarming before-and-after stories of rescue dogs finding their forever homes. Grab the tissues for this one.",
+  },
+  r3: {
+    subscribers: "1.2M subscribers",
+    verified: false,
+    likes: "22K",
+    hashtags: ["#DogVlog", "#DailyLife", "#GoldenRetriever"],
+    description:
+      "Follow along for a full day in the life of a very good boy, from morning zoomies to evening cuddles on the couch.",
+  },
+  r4: {
+    subscribers: "890K subscribers",
+    verified: false,
+    likes: "17K",
+    hashtags: ["#DogTreats", "#HomemadeRecipes", "#DogCare"],
+    description:
+      "Three easy, vet-approved homemade treat recipes using ingredients you already have in your kitchen.",
+  },
+};
+
+export const videoDetails: Record<string, VideoDetails> = Object.fromEntries(
+  allVideos.map((video) => [
+    video.id,
+    {
+      ...video,
+      ...detailExtras[video.id],
+      comments: sampleComments,
+    },
+  ])
+);
+
+export function getVideoDetails(id: string): VideoDetails | undefined {
+  return videoDetails[id];
+}
