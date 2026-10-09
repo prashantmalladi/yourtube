@@ -7,6 +7,7 @@ export type Video = {
   uploaded: string;
   duration: string;
   thumbnailGradient: string;
+  thumbnailUrl?: string | null;
   emoji: string;
 };
 
@@ -45,6 +46,7 @@ export type VideoDetails = Video & {
   subscribers: string;
   verified: boolean;
   likes: string;
+  videoUrl?: string | null;
   hashtags: string[];
   description: string;
   comments: Comment[];

@@ -31,6 +31,8 @@ export const videos = pgTable("videos", {
   uploaded: text("uploaded").notNull(),
   duration: text("duration").notNull(),
   thumbnailGradient: text("thumbnail_gradient").notNull(),
+  thumbnailUrl: text("thumbnail_url"),
+  videoUrl: text("video_url"),
   emoji: text("emoji").notNull(),
   likes: text("likes").notNull(),
   hashtags: text("hashtags").array().notNull(),

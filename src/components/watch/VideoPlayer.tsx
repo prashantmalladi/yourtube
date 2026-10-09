@@ -1,4 +1,5 @@
 import type { VideoDetails } from "@/lib/types";
+import { VideoThumbnail } from "@/components/home/VideoThumbnail";
 import {
   CastIcon,
   ClosedCaptionIcon,
@@ -9,14 +10,31 @@ import {
   VolumeIcon,
 } from "@/components/icons";
 
+// Browsers only allow autoplay for muted video, so the player starts muted.
+function playerParams(poster?: string | null) {
+  const params = new URLSearchParams({ autoplay: "true", muted: "true" });
+  if (poster) params.set("poster", poster);
+  return params.toString();
+}
+
 export function VideoPlayer({ video }: { video: VideoDetails }) {
+  if (video.videoUrl) {
+    return (
+      <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
+        <iframe
+          src={`${video.videoUrl}?${playerParams(video.thumbnailUrl)}`}
+          title={video.title}
+          allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen"
+          allowFullScreen
+          className="absolute inset-0 h-full w-full border-0"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="group/player relative aspect-video overflow-hidden rounded-xl bg-gradient-to-br text-8xl">
-      <div
-        className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${video.thumbnailGradient}`}
-      >
-        {video.emoji}
-      </div>
+      <VideoThumbnail video={video} className="h-full w-full" />
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/70 to-transparent px-3 pt-8 pb-2 opacity-0 transition-opacity group-hover/player:opacity-100">
         <div className="pointer-events-auto h-1 w-full cursor-pointer rounded-full bg-white/30">
