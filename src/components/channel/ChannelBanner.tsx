@@ -1,4 +1,4 @@
-import type { Channel } from "@/lib/mock-data";
+import type { Channel } from "@/lib/types";
 
 export function ChannelBanner({ channel }: { channel: Channel }) {
   return (

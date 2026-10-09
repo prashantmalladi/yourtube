@@ -1,4 +1,4 @@
-import type { Comment } from "@/lib/mock-data";
+import type { Comment } from "@/lib/types";
 import { ChevronDownIcon, MoreIcon, SortIcon, ThumbsDownIcon, ThumbsUpIcon } from "@/components/icons";
 
 export function CommentsSection({ comments }: { comments: Comment[] }) {

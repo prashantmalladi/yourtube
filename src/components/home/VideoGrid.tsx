@@ -1,4 +1,4 @@
-import type { Video } from "@/lib/mock-data";
+import type { Video } from "@/lib/types";
 import { VideoCard } from "@/components/home/VideoCard";
 
 export function VideoGrid({ title, videos }: { title?: string; videos: Video[] }) {

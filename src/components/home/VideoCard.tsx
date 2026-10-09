@@ -1,4 +1,4 @@
-import type { Video } from "@/lib/mock-data";
+import type { Video } from "@/lib/types";
 
 export function VideoCard({ video }: { video: Video }) {
   return (
