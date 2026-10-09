@@ -37,10 +37,12 @@ export const resources: Record<ResourceKey, Resource> = {
     pk: "id",
     displayField: "name",
     orderBy: "name",
-    columns: ["id", "avatarEmoji", "name"],
+    columns: ["id", "avatarEmoji", "name", "email", "isAdmin"],
     fields: [
       { name: "name", label: "Name", type: "text", required: true },
       { name: "avatarEmoji", label: "Avatar emoji", type: "text", required: true },
+      { name: "email", label: "Email (needed to sign in)", type: "text" },
+      { name: "isAdmin", label: "Admin", type: "checkbox" },
     ],
   },
   channels: {

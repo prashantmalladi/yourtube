@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { BellIcon, MenuIcon, MicIcon, SearchIcon } from "@/components/icons";
+import { AccountMenu } from "@/components/auth/AccountMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useSidebar } from "@/components/layout/SidebarContext";
 
@@ -62,12 +63,7 @@ export function Header() {
         >
           <BellIcon className="h-6 w-6 text-zinc-700 dark:text-zinc-300" />
         </button>
-        <button
-          aria-label="Account"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-200 text-lg dark:bg-amber-700"
-        >
-          🐕
-        </button>
+        <AccountMenu />
       </div>
     </header>
   );
