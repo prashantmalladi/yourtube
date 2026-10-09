@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { channels, comments, users, videos } from "../drizzle/schema";
+import { accounts, channels, comments, sessions, users, verifications, videos } from "../drizzle/schema";
 import {
   channels as mockChannels,
   forYouVideos,
@@ -24,6 +24,10 @@ async function main() {
       if (!userList.has(c.author)) userList.set(c.author, c.avatarEmoji);
 
   // Clear in FK order so the seed can be re-run.
+  // Auth rows reference users, so they go first. This also removes the admin: re-run create-admin.ts.
+  await db.delete(sessions);
+  await db.delete(accounts);
+  await db.delete(verifications);
   await db.delete(comments);
   await db.delete(videos);
   await db.delete(channels);

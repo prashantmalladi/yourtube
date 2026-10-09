@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { column, getResource, type Field } from "@/lib/admin/resources";
+import { requireAdmin } from "@/lib/auth";
 import { isUuid } from "@/lib/uuid";
 
 function parseField(field: Field, formData: FormData): unknown {
@@ -42,6 +43,7 @@ function messageOf(error: unknown) {
 }
 
 export async function saveRecord(resourceKey: string, id: string | null, formData: FormData) {
+  await requireAdmin();
   const resource = getResource(resourceKey);
   if (!resource) throw new Error("Unknown resource");
 
@@ -68,6 +70,7 @@ export async function saveRecord(resourceKey: string, id: string | null, formDat
 }
 
 export async function deleteRecord(resourceKey: string, id: string) {
+  await requireAdmin();
   const resource = getResource(resourceKey);
   if (!resource) throw new Error("Unknown resource");
 
