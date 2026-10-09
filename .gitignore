@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# mock media (large; only mock_data/assignments.json is tracked)
+mock_data/images/
+mock_data/videos/

@@ -22,6 +22,20 @@
       "when": 1791571528518,
       "tag": "0002_chief_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791583094109,
+      "tag": "0003_aberrant_cammi",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791586852844,
+      "tag": "0004_dazzling_sentinels",
+      "breakpoints": true
     }
   ]
 }

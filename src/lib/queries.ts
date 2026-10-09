@@ -13,6 +13,7 @@ const videoColumns = {
   uploaded: videos.uploaded,
   duration: videos.duration,
   thumbnailGradient: videos.thumbnailGradient,
+  thumbnailUrl: videos.thumbnailUrl,
   emoji: videos.emoji,
 };
 
@@ -62,6 +63,7 @@ export async function getVideoDetails(id: string): Promise<VideoDetails | undefi
       ...videoColumns,
       subscribers: channels.subscribers,
       verified: channels.verified,
+      videoUrl: videos.videoUrl,
       likes: videos.likes,
       hashtags: videos.hashtags,
       description: videos.description,

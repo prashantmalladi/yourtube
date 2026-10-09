@@ -1,17 +1,15 @@
 import type { Video } from "@/lib/types";
+import { VideoThumbnail } from "@/components/home/VideoThumbnail";
 
 export function VideoCard({ video }: { video: Video }) {
   return (
     <div className="flex flex-col gap-2">
       <a href={`/watch/${video.id}`} className="group block">
-        <div
-          className={`relative flex aspect-video items-center justify-center rounded-xl bg-gradient-to-br text-5xl ${video.thumbnailGradient}`}
-        >
-          {video.emoji}
+        <VideoThumbnail video={video} className="rounded-xl text-5xl">
           <span className="absolute right-2 bottom-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-medium text-white">
             {video.duration}
           </span>
-        </div>
+        </VideoThumbnail>
       </a>
       <div className="flex gap-3">
         <a href={`/channel/${video.channelId}`} className="shrink-0">

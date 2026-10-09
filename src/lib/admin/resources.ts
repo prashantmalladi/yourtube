@@ -80,6 +80,8 @@ export const resources: Record<ResourceKey, Resource> = {
       { name: "uploaded", label: "Uploaded", type: "text", required: true },
       { name: "duration", label: "Duration", type: "text", required: true },
       { name: "thumbnailGradient", label: "Thumbnail gradient (Tailwind)", type: "text", required: true },
+      { name: "thumbnailUrl", label: "Thumbnail URL", type: "text" },
+      { name: "videoUrl", label: "Video player URL", type: "text" },
       { name: "emoji", label: "Emoji", type: "text", required: true },
       { name: "likes", label: "Likes", type: "text", required: true },
       { name: "hashtags", label: "Hashtags (comma separated)", type: "tags" },
