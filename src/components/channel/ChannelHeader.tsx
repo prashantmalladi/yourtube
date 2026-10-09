@@ -1,4 +1,4 @@
-import type { Channel } from "@/lib/mock-data";
+import type { Channel } from "@/lib/types";
 import { CheckBadgeIcon } from "@/components/icons";
 
 export function ChannelHeader({ channel }: { channel: Channel }) {

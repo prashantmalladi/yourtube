@@ -3,20 +3,17 @@ import { VideoPlayer } from "@/components/watch/VideoPlayer";
 import { VideoInfo } from "@/components/watch/VideoInfo";
 import { CommentsSection } from "@/components/watch/CommentsSection";
 import { RelatedVideos } from "@/components/watch/RelatedVideos";
-import { allVideos, getVideoDetails } from "@/lib/mock-data";
-
-export async function generateStaticParams() {
-  return allVideos.map((video) => ({ id: video.id }));
-}
+import { getAllVideos, getVideoDetails } from "@/lib/queries";
 
 export default async function WatchPage({ params }: PageProps<"/watch/[id]">) {
   const { id } = await params;
-  const video = getVideoDetails(id);
+  const video = await getVideoDetails(id);
 
   if (!video) {
     notFound();
   }
 
+  const allVideos = await getAllVideos();
   const relatedVideos = allVideos.filter((candidate) => candidate.id !== video.id);
 
   return (

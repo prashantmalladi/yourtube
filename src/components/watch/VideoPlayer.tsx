@@ -1,4 +1,4 @@
-import type { VideoDetails } from "@/lib/mock-data";
+import type { VideoDetails } from "@/lib/types";
 import {
   CastIcon,
   ClosedCaptionIcon,

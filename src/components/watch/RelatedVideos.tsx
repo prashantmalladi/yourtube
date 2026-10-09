@@ -1,4 +1,4 @@
-import type { Video } from "@/lib/mock-data";
+import type { Video } from "@/lib/types";
 import { RelatedVideoCard } from "@/components/watch/RelatedVideoCard";
 
 const filters = ["All", "From Channel", "Puppies", "Related"];

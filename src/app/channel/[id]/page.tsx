@@ -4,23 +4,19 @@ import { ChannelHeader } from "@/components/channel/ChannelHeader";
 import { ChannelTabs } from "@/components/channel/ChannelTabs";
 import { FeaturedVideo } from "@/components/channel/FeaturedVideo";
 import { VideoGrid } from "@/components/home/VideoGrid";
-import { channels, getChannel, getChannelVideos, getVideoDetails } from "@/lib/mock-data";
-
-export async function generateStaticParams() {
-  return channels.map((channel) => ({ id: channel.id }));
-}
+import { getChannel, getChannelVideos, getVideoDetails } from "@/lib/queries";
 
 export default async function ChannelPage({ params }: PageProps<"/channel/[id]">) {
   const { id } = await params;
-  const channel = getChannel(id);
+  const channel = await getChannel(id);
 
   if (!channel) {
     notFound();
   }
 
-  const channelVideos = getChannelVideos(channel.id);
+  const channelVideos = await getChannelVideos(channel.id);
   const [featured, ...rest] = channelVideos;
-  const featuredDetails = featured ? getVideoDetails(featured.id) : undefined;
+  const featuredDetails = featured ? await getVideoDetails(featured.id) : undefined;
 
   return (
     <div className="mx-auto flex max-w-[1750px] flex-col gap-6 px-4 py-4 sm:px-6">
