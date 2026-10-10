@@ -89,6 +89,31 @@ export const videos = pgTable("videos", {
   position: integer("position").notNull(),
 });
 
+// One attempt at making a video. A user can have several per idea (regenerate).
+export const generations = pgTable("generations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  /** What the user typed. */
+  prompt: text("prompt").notNull(),
+  /** The cat-safe prompt actually sent to the video model. Empty until polishing finishes. */
+  polishedPrompt: text("polished_prompt"),
+  title: text("title"),
+  description: text("description"),
+  hashtags: text("hashtags").array(),
+  /** Set once the job has been sent to fal; null means no paid video call was made. */
+  falModel: text("fal_model"),
+  falRequestId: text("fal_request_id"),
+  /** starting | generating | ready | publishing | published | failed | rejected */
+  status: text("status").notNull().default("starting"),
+  /** Temporary fal-hosted URL, valid until the clip is copied to Cloudflare. */
+  videoUrl: text("video_url"),
+  error: text("error"),
+  videoId: uuid("video_id").references(() => videos.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const comments = pgTable("comments", {
   id: uuid("id").primaryKey().defaultRandom(),
   videoId: uuid("video_id")

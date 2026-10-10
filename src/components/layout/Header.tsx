@@ -56,6 +56,12 @@ export function Header() {
       </div>
 
       <div className="flex shrink-0 items-center gap-3">
+        <Link
+          href="/create"
+          className="hidden items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-medium hover:bg-zinc-200 sm:flex dark:bg-zinc-800 dark:hover:bg-zinc-700"
+        >
+          <span className="text-lg leading-none">+</span> Create
+        </Link>
         <ThemeToggle />
         <button
           aria-label="Notifications"
