@@ -9,7 +9,13 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     return <p className="px-4 py-8 text-sm text-zinc-500 sm:px-6">Type something to search.</p>;
   }
 
-  const results = await searchVideos(query);
+  let results;
+  try {
+    results = await searchVideos(query);
+  } catch (e) {
+    console.error("Search failed", e);
+    return <p className="px-4 py-8 text-sm text-zinc-500 sm:px-6">Search is unavailable right now. Please try again.</p>;
+  }
 
   return (
     <div className="flex flex-col gap-4 px-4 py-4 sm:px-6">
