@@ -17,6 +17,7 @@ export function view(row: GenerationRow) {
     id: row.id,
     status: row.status,
     videoUrl: row.videoUrl,
+    thumbnailUrl: row.thumbnailUrl,
     title: row.title ?? "",
     description: row.description ?? "",
     hashtags: row.hashtags ?? [],
@@ -74,7 +75,7 @@ export async function reserveAttempt(userId: string, prompt: string): Promise<Re
       .from(generations)
       .where(
         and(
-          inArray(generations.status, ["starting", "generating"]),
+          inArray(generations.status, ["starting", "thumbnailing", "generating"]),
           eq(generations.userId, userId),
           gte(generations.createdAt, new Date(Date.now() - STALE_AFTER_MS))
         )

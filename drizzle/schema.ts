@@ -109,7 +109,13 @@ export const generations = pgTable("generations", {
   /** Set once the job has been sent to fal; null means no paid video call was made. */
   falModel: text("fal_model"),
   falRequestId: text("fal_request_id"),
-  /** starting | generating | ready | publishing | published | failed | rejected */
+  /** Set once the thumbnail job has been sent to fal. */
+  falImageRequestId: text("fal_image_request_id"),
+  /** The thumbnail: a temporary fal URL while the user reviews it, then a permanent Cloudflare Images URL once confirmed. */
+  thumbnailUrl: text("thumbnail_url"),
+  /** When the confirmed thumbnail was sent to the video model; the video timeout counts from here, not from createdAt. */
+  videoStartedAt: timestamp("video_started_at", { withTimezone: true }),
+  /** starting | thumbnailing | thumbnail_ready | generating | ready | publishing | published | failed | rejected */
   status: text("status").notNull().default("starting"),
   /** Temporary fal-hosted URL, valid until the clip is copied to Cloudflare. */
   videoUrl: text("video_url"),

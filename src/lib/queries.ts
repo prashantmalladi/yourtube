@@ -1,5 +1,6 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, cosineDistance, eq, isNotNull } from "drizzle-orm";
 import { channels, comments, users, videos } from "../../drizzle/schema";
+import { embedText } from "./clip";
 import { db } from "./db";
 import { isUuid } from "./uuid";
 import type { Channel, Comment, Video, VideoDetails } from "./types";
@@ -31,6 +32,18 @@ export async function getAllVideos(): Promise<Video[]> {
 
 export async function getVideosBySection(section: "for-you" | "recommended"): Promise<Video[]> {
   return selectVideos().where(eq(videos.section, section));
+}
+
+/** Videos whose thumbnails best match the query, by CLIP text-to-image similarity (pgvector cosine distance). */
+export async function searchVideos(query: string, limit = 24): Promise<Video[]> {
+  const embedding = await embedText(query);
+  return db
+    .select(videoColumns)
+    .from(videos)
+    .innerJoin(channels, eq(videos.channelId, channels.id))
+    .where(isNotNull(videos.thumbnailEmbedding))
+    .orderBy(cosineDistance(videos.thumbnailEmbedding, embedding))
+    .limit(limit);
 }
 
 export async function getChannel(id: string): Promise<Channel | undefined> {

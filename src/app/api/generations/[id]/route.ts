@@ -3,11 +3,11 @@ import { NextResponse } from "next/server";
 import { generations } from "../../../../../drizzle/schema";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { checkVideo } from "@/lib/generate/fal";
+import { FAL_IMAGE_MODEL, checkThumbnail, checkVideo } from "@/lib/generate/fal";
 import { NotConfigured } from "@/lib/generate/polish";
 import { STALE_AFTER_MS, findOwned, view } from "@/lib/generate/store";
 
-/** Current state of a generation. While it is running, this also asks fal how it is getting on. */
+/** Current state of a generation. While a thumbnail or video is being made, this also asks fal how it is getting on. */
 export async function GET(_request: Request, { params }: RouteContext<"/api/generations/[id]">) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Sign in to create videos" }, { status: 401 });
@@ -15,19 +15,37 @@ export async function GET(_request: Request, { params }: RouteContext<"/api/gene
   const { id } = await params;
   const row = await findOwned(id, session.user.id);
   if (!row) return NextResponse.json({ error: "Generation not found" }, { status: 404 });
-  if (row.status !== "generating" || !row.falModel || !row.falRequestId) return NextResponse.json(view(row));
+
+  // Which fal job (if any) this row is waiting on, and what to record when it finishes.
+  const job =
+    row.status === "thumbnailing" && row.falImageRequestId
+      ? {
+          check: () => checkThumbnail(FAL_IMAGE_MODEL, row.falImageRequestId!),
+          done: (url: string) => ({ status: "thumbnail_ready", thumbnailUrl: url }),
+          startedAt: row.createdAt,
+          timeout: "Timed out while making your thumbnail",
+        }
+      : row.status === "generating" && row.falModel && row.falRequestId
+        ? {
+            check: () => checkVideo(row.falModel!, row.falRequestId!),
+            done: (url: string) => ({ status: "ready", videoUrl: url }),
+            startedAt: row.videoStartedAt ?? row.createdAt,
+            timeout: "Timed out while making your video",
+          }
+        : null;
+  if (!job) return NextResponse.json(view(row));
 
   try {
-    const result = await checkVideo(row.falModel, row.falRequestId);
-    const stale = Date.now() - row.createdAt.getTime() > STALE_AFTER_MS;
+    const result = await job.check();
+    const stale = Date.now() - job.startedAt.getTime() > STALE_AFTER_MS;
 
     const patch =
       result.state === "done"
-        ? { status: "ready", videoUrl: result.url }
+        ? job.done(result.url)
         : result.state === "failed"
           ? { status: "failed", error: result.error }
           : stale
-            ? { status: "failed", error: "Timed out while making your video" }
+            ? { status: "failed", error: job.timeout }
             : null;
 
     if (!patch) return NextResponse.json(view(row));

@@ -64,6 +64,13 @@
       "when": 1791655112947,
       "tag": "0008_pgvector_thumbnail_embeddings",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793376711723,
+      "tag": "0009_generation_thumbnails",
+      "breakpoints": true
     }
   ]
 }

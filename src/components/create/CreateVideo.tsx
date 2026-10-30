@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Generation = {
   id: string;
-  status: "generating" | "ready" | "failed" | "publishing" | "published";
+  status: "thumbnailing" | "thumbnail_ready" | "generating" | "ready" | "failed" | "publishing" | "published";
   videoUrl: string | null;
+  thumbnailUrl: string | null;
   title: string;
   description: string;
   hashtags: string[];
@@ -14,7 +16,11 @@ type Generation = {
   error: string | null;
 };
 
-type Phase = "idle" | "working" | "review" | "publishing" | "done";
+/**
+ * idle -> makingThumbnail -> pickThumbnail -> makingVideo -> publishing -> done (opens the watch page).
+ * "review" is only reached if the automatic upload fails, so the user can retry it.
+ */
+type Phase = "idle" | "makingThumbnail" | "pickThumbnail" | "makingVideo" | "review" | "publishing" | "done";
 
 const POLL_MS = 4000;
 /** Give up after this many failed status checks in a row (about a minute). */
@@ -39,6 +45,7 @@ async function api<T>(url: string, init?: RequestInit): Promise<{ ok: true; data
 }
 
 export function CreateVideo() {
+  const router = useRouter();
   const [phase, setPhase] = useState<Phase>("idle");
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("");
@@ -67,7 +74,7 @@ export function CreateVideo() {
 
   // While a video is being made, ask the server for progress until it is ready or fails.
   useEffect(() => {
-    if (phase !== "working" || !generationId) return;
+    if ((phase !== "makingThumbnail" && phase !== "makingVideo") || !generationId) return;
 
     let failures = 0;
     let stopped = false;
@@ -85,10 +92,14 @@ export function CreateVideo() {
       }
       failures = 0;
 
-      if (result.data.status === "ready") {
+      if (result.data.status === "thumbnail_ready") {
         setGeneration(result.data);
-        setTitle(result.data.title);
-        setPhase("review");
+        setTitle((current) => current || result.data.title);
+        setPhase("pickThumbnail");
+      } else if (result.data.status === "ready") {
+        // The video is made: upload it straight away and open it.
+        setGeneration(result.data);
+        upload(result.data);
       } else if (result.data.status === "failed") {
         setError(result.data.error ?? "Video generation failed. Please try again.");
         setPhase("idle");
@@ -99,11 +110,13 @@ export function CreateVideo() {
       stopped = true;
       clearInterval(timer);
     };
+    // upload is only used for the one-off call above and reads nothing stale.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, generationId]);
 
   async function start(body: { prompt: string } | { fromId: string }) {
     setError(null);
-    setPhase("working");
+    setPhase("makingThumbnail");
     const result = await api<Generation>("/api/generations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -111,7 +124,7 @@ export function CreateVideo() {
     });
     if (!result.ok) {
       setError(result.message);
-      setPhase(generation ? "review" : "idle");
+      setPhase(generation ? "pickThumbnail" : "idle");
       refreshUsage();
       return;
     }
@@ -119,11 +132,24 @@ export function CreateVideo() {
     refreshUsage();
   }
 
-  async function upload() {
+  async function confirmThumbnail() {
     if (!generation) return;
     setError(null);
+    setPhase("makingVideo");
+    const result = await api<Generation>(`/api/generations/${generation.id}/confirm`, { method: "POST" });
+    if (!result.ok) {
+      setError(result.message);
+      setPhase("pickThumbnail");
+      return;
+    }
+    setGeneration(result.data);
+  }
+
+  async function upload(target: Generation | null = generation) {
+    if (!target) return;
+    setError(null);
     setPhase("publishing");
-    const result = await api<{ videoId: string }>(`/api/generations/${generation.id}/publish`, {
+    const result = await api<{ videoId: string }>(`/api/generations/${target.id}/publish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title }),
@@ -135,6 +161,7 @@ export function CreateVideo() {
     }
     setPublishedId(result.data.videoId);
     setPhase("done");
+    router.push(`/watch/${result.data.videoId}`);
   }
 
   function reset() {
@@ -160,13 +187,51 @@ export function CreateVideo() {
     return (
       <div className="flex flex-col items-start gap-4">
         <p className="text-lg font-semibold">Your video is live! 🎉</p>
-        <p className="text-sm text-zinc-500">It can take a few seconds for the thumbnail to appear while it finishes processing.</p>
+        <p className="text-sm text-zinc-500">Opening it now. It can take a few seconds for the video to finish processing.</p>
         <div className="flex gap-3">
           <Link href={`/watch/${publishedId}`} className={primaryButton}>
             Watch it
           </Link>
           <button onClick={reset} className={secondaryButton}>
             Make another
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "pickThumbnail") {
+    return (
+      <div className="flex flex-col gap-4">
+        {generation?.thumbnailUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={generation.thumbnailUrl}
+            alt="Your video thumbnail"
+            className="aspect-video w-full rounded-xl bg-zinc-200 object-cover dark:bg-zinc-800"
+          />
+        )}
+
+        <label className="flex flex-col gap-1 text-sm font-medium">
+          Title
+          <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={100} className={inputClass} />
+        </label>
+        <p className="text-sm text-zinc-500">
+          {generation?.description} <span className="text-blue-700 dark:text-blue-400">{generation?.hashtags.join(" ")}</span>
+        </p>
+
+        {errorBox}
+        {allowance}
+
+        <div className="flex flex-wrap gap-3">
+          <button onClick={confirmThumbnail} disabled={title.trim().length < 3} className={primaryButton}>
+            Use this thumbnail
+          </button>
+          <button onClick={() => generation && start({ fromId: generation.id })} className={secondaryButton}>
+            New thumbnail
+          </button>
+          <button onClick={reset} className={secondaryButton}>
+            Start over
           </button>
         </div>
       </div>
@@ -189,23 +254,11 @@ export function CreateVideo() {
           />
         )}
 
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Title
-          <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={100} className={inputClass} />
-        </label>
-        <p className="text-sm text-zinc-500">
-          {generation?.description} <span className="text-blue-700 dark:text-blue-400">{generation?.hashtags.join(" ")}</span>
-        </p>
-
         {errorBox}
-        {allowance}
 
         <div className="flex flex-wrap gap-3">
-          <button onClick={upload} disabled={busy || title.trim().length < 3} className={primaryButton}>
+          <button onClick={() => upload()} disabled={busy} className={primaryButton}>
             {busy ? "Uploading…" : "Upload"}
-          </button>
-          <button onClick={() => generation && start({ fromId: generation.id })} disabled={busy} className={secondaryButton}>
-            Regenerate
           </button>
           <button onClick={reset} disabled={busy} className={secondaryButton}>
             Start over
@@ -215,7 +268,27 @@ export function CreateVideo() {
     );
   }
 
-  const working = phase === "working";
+  if (phase === "makingVideo") {
+    return (
+      <div className="flex flex-col gap-4">
+        {generation?.thumbnailUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={generation.thumbnailUrl}
+            alt="Your video thumbnail"
+            className="aspect-video w-full rounded-xl bg-zinc-200 object-cover dark:bg-zinc-800"
+          />
+        )}
+        {errorBox}
+        <p className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900 dark:border-zinc-700 dark:border-t-zinc-100" />
+          Making your video from this thumbnail. This usually takes a few minutes, and we will open it when it is ready…
+        </p>
+      </div>
+    );
+  }
+
+  const working = phase === "makingThumbnail";
   return (
     <form
       onSubmit={(e) => {
@@ -237,7 +310,7 @@ export function CreateVideo() {
           className={inputClass}
         />
         <span className="text-xs font-normal text-zinc-500">
-          Whatever you type, we turn it into a family-friendly video starring a cat, about 10 seconds long.
+          Whatever you type, we turn it into a family-friendly video starring a cat, about 15 seconds long. You approve the thumbnail first.
         </span>
       </label>
 
@@ -247,7 +320,7 @@ export function CreateVideo() {
       {working ? (
         <p className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900 dark:border-zinc-700 dark:border-t-zinc-100" />
-          Making your video. This usually takes a few minutes…
+          Making your thumbnail. This usually takes under a minute…
         </p>
       ) : (
         <button disabled={prompt.trim().length < 3} className={`${primaryButton} self-start`}>

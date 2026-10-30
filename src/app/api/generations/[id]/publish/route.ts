@@ -7,7 +7,10 @@ import { db } from "@/lib/db";
 import { publishGeneration } from "@/lib/generate/publish";
 import { findOwned } from "@/lib/generate/store";
 
-const error = (message: string, status: number) => NextResponse.json({ error: message }, { status });
+// Publishing waits for Cloudflare Stream to finish processing the video.
+export const maxDuration = 180;
+
+const error =(message: string, status: number) => NextResponse.json({ error: message }, { status });
 
 /** Publishes a finished generation so everyone can watch it. Optional body: { title }. */
 export async function POST(request: Request, { params }: RouteContext<"/api/generations/[id]/publish">) {
@@ -32,7 +35,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/gene
 
   try {
     const videoId = await publishGeneration(
-      { videoUrl: claimed.videoUrl, description: claimed.description ?? "", hashtags: claimed.hashtags ?? [] },
+      { videoUrl: claimed.videoUrl, thumbnailUrl: claimed.thumbnailUrl, description: claimed.description ?? "", hashtags: claimed.hashtags ?? [] },
       title,
       { id: session.user.id, name: session.user.name }
     );

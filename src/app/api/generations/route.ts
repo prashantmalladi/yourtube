@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { generations } from "../../../../drizzle/schema";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { submitVideo } from "@/lib/generate/fal";
+import { submitThumbnail } from "@/lib/generate/fal";
 import { MAX_IDEA_LENGTH, NotConfigured, polishIdea } from "@/lib/generate/polish";
 import { DAILY_LIMIT, findOwned, reserveAttempt, usedToday, view } from "@/lib/generate/store";
 
@@ -19,8 +19,9 @@ export async function GET() {
 }
 
 /**
- * Starts a video. Send { prompt } for a new idea, or { fromId } to regenerate an
- * earlier generation of yours with the same polished prompt.
+ * Starts the thumbnail for a new video; the video itself is made once the user confirms it.
+ * Send { prompt } for a new idea, or { fromId } to regenerate an
+ * earlier generation of yours with the same polished prompt (a new thumbnail).
  */
 export async function POST(request: Request) {
   const session = await getSession();
@@ -74,8 +75,8 @@ export async function POST(request: Request) {
       hashtags: polished.hashtags,
     });
 
-    const job = await submitVideo(polished.prompt);
-    const [updated] = await finish({ falModel: job.model, falRequestId: job.requestId, status: "generating" });
+    const job = await submitThumbnail(polished.prompt);
+    const [updated] = await finish({ falImageRequestId: job.requestId, status: "thumbnailing" });
     return NextResponse.json(view(updated), { status: 201 });
   } catch (e) {
     if (e instanceof NotConfigured) {

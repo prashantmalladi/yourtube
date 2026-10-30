@@ -1,9 +1,11 @@
 import { asc, count, eq, min } from "drizzle-orm";
 import { channels, videos } from "../../../drizzle/schema";
 import { copyToStream } from "../cloudflare";
+import { embedThumbnail } from "../clip";
 import { db } from "../db";
+import { VIDEO_DURATION } from "./fal";
 
-type Generation = { videoUrl: string; description: string; hashtags: string[] };
+type Generation = { videoUrl: string; thumbnailUrl: string | null; description: string; hashtags: string[] };
 type Owner = { id: string; name: string };
 
 const BANNER_GRADIENTS = [
@@ -56,9 +58,10 @@ export async function publishGeneration(generation: Generation, title: string, o
       title,
       views: "0 views",
       uploaded: "Just now",
-      duration: "0:10",
+      duration: VIDEO_DURATION,
       thumbnailGradient: "from-amber-200 to-orange-300",
-      thumbnailUrl: stream.thumbnailUrl,
+      // The thumbnail the user confirmed; Stream's own frame is only a fallback.
+      thumbnailUrl: generation.thumbnailUrl ?? stream.thumbnailUrl,
       videoUrl: stream.playerUrl,
       emoji: "🐱",
       likes: "0",
@@ -68,6 +71,15 @@ export async function publishGeneration(generation: Generation, title: string, o
       position: (first ?? 0) - 1,
     })
     .returning({ id: videos.id });
+
+  // Best effort: a failure must not lose the published video; scripts/embed-thumbnails.ts backfills it.
+  const thumbnailUrl = generation.thumbnailUrl ?? stream.thumbnailUrl;
+  try {
+    const thumbnailEmbedding = await embedThumbnail(thumbnailUrl);
+    await db.update(videos).set({ thumbnailEmbedding }).where(eq(videos.id, video.id));
+  } catch (e) {
+    console.error(`Could not embed thumbnail for ${video.id}`, e);
+  }
 
   const [{ total }] = await db
     .select({ total: count() })
