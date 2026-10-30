@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, uuid, vector } from "drizzle-orm/pg-core";
 
 // Doubles as Better Auth's user table. Rows without an email are display-only
 // users (comment authors, channel owners) who cannot sign in.
@@ -80,6 +80,8 @@ export const videos = pgTable("videos", {
   duration: text("duration").notNull(),
   thumbnailGradient: text("thumbnail_gradient").notNull(),
   thumbnailUrl: text("thumbnail_url"),
+  /** CLIP ViT-B/32 image embedding of the thumbnail (L2-normalised), see scripts/embed-thumbnails.ts. */
+  thumbnailEmbedding: vector("thumbnail_embedding", { dimensions: 512 }),
   videoUrl: text("video_url"),
   emoji: text("emoji").notNull(),
   likes: text("likes").notNull(),
@@ -87,7 +89,9 @@ export const videos = pgTable("videos", {
   description: text("description").notNull(),
   section: text("section").notNull(),
   position: integer("position").notNull(),
-});
+}, (t) => [
+  index("videos_thumbnail_embedding_idx").using("hnsw", t.thumbnailEmbedding.op("vector_cosine_ops")),
+]);
 
 // One attempt at making a video. A user can have several per idea (regenerate).
 export const generations = pgTable("generations", {
