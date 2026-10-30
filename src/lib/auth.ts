@@ -5,7 +5,17 @@ import { headers } from "next/headers";
 import { accounts, sessions, users, verifications } from "../../drizzle/schema";
 import { db } from "./db";
 
+// Better Auth rejects sign-in requests whose Origin is not its base URL or listed here. Every Vercel
+// deployment has its own hostname (and BETTER_AUTH_URL can only name one), so trust the ones Vercel
+// reports for this deployment. A *.vercel.app wildcard would trust anyone's Vercel app, so it is not used.
+const vercelOrigins = [
+  process.env.VERCEL_URL, // this deployment, e.g. yourtube-abc123-team.vercel.app
+  process.env.VERCEL_BRANCH_URL, // the branch alias
+  process.env.VERCEL_PROJECT_PRODUCTION_URL, // the production domain
+].flatMap((host) => (host ? [`https://${host}`] : []));
+
 export const auth = betterAuth({
+  trustedOrigins: vercelOrigins,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: { users, sessions, accounts, verifications },
