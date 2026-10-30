@@ -1,4 +1,4 @@
-import { boolean, index, integer, pgTable, text, timestamp, uuid, vector } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, primaryKey, real, text, timestamp, uuid, vector } from "drizzle-orm/pg-core";
 
 // Doubles as Better Auth's user table. Rows without an email are display-only
 // users (comment authors, channel owners) who cannot sign in.
@@ -138,3 +138,45 @@ export const comments = pgTable("comments", {
   replies: integer("replies").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Taste dimensions ("noir", "anime", ...). The embedding is CLIP's text embedding of `prompt`,
+// so a video's thumbnail embedding can be scored against every dimension. See scripts/seed-dimensions.ts.
+export const preferenceDimensions = pgTable("preference_dimensions", {
+  slug: text("slug").primaryKey(),
+  label: text("label").notNull(),
+  /** style | genre | subject | mood | setting */
+  kind: text("kind").notNull(),
+  prompt: text("prompt").notNull(),
+  embedding: vector("embedding", { dimensions: 512 }).notNull(),
+});
+
+// How much a viewer likes each dimension. profile_key is "user:<id>" when signed in, else "anon:<cookie>".
+export const userPreferences = pgTable(
+  "user_preferences",
+  {
+    profileKey: text("profile_key").notNull(),
+    dimension: text("dimension")
+      .notNull()
+      .references(() => preferenceDimensions.slug, { onDelete: "cascade" }),
+    score: real("score").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.profileKey, t.dimension] })]
+);
+
+// Raw signals, kept so the debug page can show what the system saw.
+export const preferenceEvents = pgTable(
+  "preference_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    profileKey: text("profile_key").notNull(),
+    videoId: uuid("video_id")
+      .notNull()
+      .references(() => videos.id, { onDelete: "cascade" }),
+    /** view | watch */
+    kind: text("kind").notNull(),
+    weight: real("weight").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("preference_events_profile_idx").on(t.profileKey, t.createdAt.desc())]
+);

@@ -52,6 +52,12 @@ export function Header() {
         >
           <span className="text-lg leading-none">+</span> Create
         </Link>
+        <Link
+          href="/debug"
+          className="hidden rounded-full px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 sm:block dark:text-zinc-300 dark:hover:bg-zinc-800"
+        >
+          Debug
+        </Link>
         <ThemeToggle />
         <button
           aria-label="Notifications"

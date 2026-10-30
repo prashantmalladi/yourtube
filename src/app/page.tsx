@@ -2,12 +2,15 @@ import { HeroBanner } from "@/components/home/HeroBanner";
 import { CategoryChips } from "@/components/home/CategoryChips";
 import { VideoGrid } from "@/components/home/VideoGrid";
 import { ShortsRow } from "@/components/home/ShortsRow";
-import { getVideosBySection } from "@/lib/queries";
+import { getProfileKey } from "@/lib/preferences";
+import { getRecommendedVideos, getVideosBySection } from "@/lib/queries";
 
 export default async function Home() {
-  const [forYouVideos, recommendedVideos] = await Promise.all([
+  const profileKey = await getProfileKey({ create: false });
+  const [forYouVideos, fallbackVideos, personal] = await Promise.all([
     getVideosBySection("for-you"),
     getVideosBySection("recommended"),
+    profileKey ? getRecommendedVideos(profileKey) : null,
   ]);
 
   return (
@@ -16,7 +19,10 @@ export default async function Home() {
       <CategoryChips />
       <VideoGrid title="For You" videos={forYouVideos} />
       <ShortsRow />
-      <VideoGrid title="Recommended for You" videos={recommendedVideos} />
+      <VideoGrid
+        title={personal ? `Recommended for You · because you like ${personal.because.join(", ")}` : "Recommended for You"}
+        videos={personal?.videos ?? fallbackVideos}
+      />
     </div>
   );
 }
