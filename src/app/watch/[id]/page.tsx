@@ -3,7 +3,7 @@ import { VideoPlayer } from "@/components/watch/VideoPlayer";
 import { VideoInfo } from "@/components/watch/VideoInfo";
 import { CommentsSection } from "@/components/watch/CommentsSection";
 import { RelatedVideos } from "@/components/watch/RelatedVideos";
-import { getAllVideos, getVideoDetails } from "@/lib/queries";
+import { getRelatedVideos, getVideoDetails } from "@/lib/queries";
 
 export default async function WatchPage({ params }: PageProps<"/watch/[id]">) {
   const { id } = await params;
@@ -13,8 +13,7 @@ export default async function WatchPage({ params }: PageProps<"/watch/[id]">) {
     notFound();
   }
 
-  const allVideos = await getAllVideos();
-  const relatedVideos = allVideos.filter((candidate) => candidate.id !== video.id);
+  const relatedVideos = await getRelatedVideos(video.id);
 
   return (
     <div className="mx-auto flex max-w-[1750px] flex-col gap-6 px-4 py-4 sm:px-6 lg:flex-row">

@@ -1,4 +1,4 @@
-import { asc, cosineDistance, eq, isNotNull } from "drizzle-orm";
+import { asc, cosineDistance, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { channels, comments, users, videos } from "../../drizzle/schema";
 import { embedText } from "./clip";
 import { db } from "./db";
@@ -43,6 +43,25 @@ export async function searchVideos(query: string, limit = 24): Promise<Video[]> 
     .innerJoin(channels, eq(videos.channelId, channels.id))
     .where(isNotNull(videos.thumbnailEmbedding))
     .orderBy(cosineDistance(videos.thumbnailEmbedding, embedding))
+    .limit(limit);
+}
+
+/**
+ * Videos whose thumbnails are closest to the given video's, by pgvector cosine distance.
+ * Videos without an embedding sort last (by position), so this degrades to the old order
+ * when the source video has not been embedded yet.
+ */
+export async function getRelatedVideos(videoId: string, limit = 20): Promise<Video[]> {
+  if (!isUuid(videoId)) return [];
+  return db
+    .select(videoColumns)
+    .from(videos)
+    .innerJoin(channels, eq(videos.channelId, channels.id))
+    .where(ne(videos.id, videoId))
+    .orderBy(
+      sql`${videos.thumbnailEmbedding} <=> (select thumbnail_embedding from videos where id = ${videoId})`,
+      asc(videos.position)
+    )
     .limit(limit);
 }
 
